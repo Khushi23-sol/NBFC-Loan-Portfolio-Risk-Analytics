@@ -1,0 +1,27 @@
+feature,importance
+num__credit_score,0.1814553599779568
+num__emi_to_income,0.14501582013714437
+num__interest_rate,0.10731149318865735
+num__loan_amount,0.10487310568851022
+num__loan_to_annual_income,0.09818435146942087
+num__monthly_income,0.09783974701676948
+num__age,0.07058205334294368
+num__tenure_months,0.040686512715286796
+cat__employment_type_Salaried,0.037207157503928334
+cat__employment_type_Business Owner,0.019364079891238055
+cat__product_Business Loan,0.012028935433044353
+cat__employment_type_Self-Employed,0.010734434163304846
+cat__product_Personal Loan,0.008625365319641629
+cat__city_Ahmedabad,0.006774277680179782
+cat__city_Delhi,0.006170360178712425
+cat__city_Jaipur,0.005753550627446403
+cat__city_Bengaluru,0.005699234639675524
+cat__city_Lucknow,0.005424362299814188
+cat__city_Hyderabad,0.005077266509526007
+cat__city_Kolkata,0.005006820625011454
+cat__city_Chennai,0.004691322197648706
+cat__product_Home Loan,0.004641008806532935
+cat__product_Gold Loan,0.004571194487518167
+cat__city_Mumbai,0.004108127559066491
+cat__product_Vehicle Loan,0.004097776903948239
+cat__city_Pune,0.004076281637072799

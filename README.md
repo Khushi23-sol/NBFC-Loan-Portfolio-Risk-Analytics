@@ -4,7 +4,7 @@
 
 This project analyzes an NBFC loan portfolio to identify credit risk, affordability risk, delinquency patterns, portfolio concentration, and default exposure.
 
-The project follows an end-to-end analytics workflow using **Python, SQL, and Power BI**.
+The project follows an end-to-end analytics workflow using **Python, SQL, Machine Learning, FastAPI, SQLite, Streamlit, and Power BI**.
 
 ---
 
@@ -32,8 +32,11 @@ This project focuses on answering key business questions:
 3. Analyze credit score, EMI burden, and loan-to-income risk.
 4. Study delinquency using Days Past Due (DPD).
 5. Build a rule-based customer risk segmentation model.
-6. Validate portfolio data quality using SQL.
-7. Develop an interactive Power BI risk dashboard.
+6. Build Logistic Regression and Random Forest default prediction models.
+7. Evaluate models using ROC-AUC, precision, recall, confusion matrix, and feature importance.
+8. Store the ML-enriched portfolio in SQLite and expose analytics through FastAPI.
+9. Develop an interactive Streamlit risk dashboard in addition to the existing Power BI dashboard.
+10. Support collections prioritization using DPD, exposure, credit score, and ML probability.
 
 ---
 
@@ -63,8 +66,14 @@ The project uses a synthetic NBFC loan portfolio containing:
 - Pandas
 - NumPy
 - Matplotlib
+- scikit-learn
+- Logistic Regression
+- Random Forest
+- SQLite
 - MySQL
-- SQL
+- FastAPI
+- Uvicorn
+- Streamlit
 - Power BI
 - JupyterLab
 - Git & GitHub
@@ -82,13 +91,27 @@ Feature Engineering
        ↓
 Portfolio KPI Analysis
        ↓
-Risk Segmentation
+Rule-Based Risk Scoring
        ↓
-SQL Risk Analysis
+Machine Learning
+   ├── Logistic Regression
+   └── Random Forest
        ↓
-Power BI Dashboard
+Model Evaluation
+   ├── ROC-AUC
+   ├── Precision / Recall
+   ├── Confusion Matrix
+   └── Feature Importance
        ↓
-Business Insights
+SQLite Database
+       ↓
+FastAPI REST API
+       ↓ HTTP
+Streamlit Dashboard
+       ↓
+Collections & Portfolio Risk Insights
+       ↓
+Power BI Analytical Dashboard
 ```
 
 ---
@@ -245,6 +268,122 @@ Customers were classified into:
 
 ---
 
+## Machine Learning Default Prediction
+
+Two classification models were implemented:
+
+- Logistic Regression
+- Random Forest
+
+The ML feature set uses borrower, loan, employment, geographic, affordability, and exposure-related variables.
+
+`days_past_due` is excluded from the predictive feature set to avoid using a post-disbursement delinquency indicator as a predictor of default.
+
+### Model Results
+
+| Model | ROC-AUC |
+|---|---:|
+| Logistic Regression | 0.583 |
+| Random Forest | 0.590 |
+
+Random Forest test-set metrics:
+
+- Precision for default class: **0.185**
+- Recall for default class: **0.345**
+
+These results represent a baseline model evaluated on synthetic data rather than a production credit model.
+
+### Top ML Features
+
+| Feature | Importance |
+|---|---:|
+| Credit Score | 0.1815 |
+| EMI-to-Income | 0.1450 |
+| Interest Rate | 0.1073 |
+| Loan Amount | 0.1049 |
+| Loan-to-Annual-Income | 0.0982 |
+| Monthly Income | 0.0978 |
+| Age | 0.0706 |
+| Tenure Months | 0.0407 |
+| Employment Type — Salaried | 0.0372 |
+| Employment Type — Business Owner | 0.0194 |
+
+Feature importance indicates model contribution and should not be interpreted as causality.
+
+---
+
+## SQLite & FastAPI Analytics Layer
+
+SQLite is used as the application database containing the ML-enriched loan portfolio.
+
+FastAPI exposes REST endpoints:
+
+```text
+GET /api/portfolio/summary
+GET /api/portfolio/product-risk
+GET /api/portfolio/credit-risk
+GET /api/portfolio/city-risk
+GET /api/portfolio/vintage
+GET /api/risk/high-risk-loans
+GET /api/collections/priority
+```
+
+Portfolio endpoints support filters for:
+
+- Product
+- City
+- Credit Band
+
+The API layer connects the database to the Streamlit frontend over HTTP.
+
+---
+
+## Streamlit Dashboard
+
+The Streamlit application provides an interactive portfolio monitoring interface with:
+
+- Portfolio Overview
+- Product-wise Risk
+- Credit Score Risk Analysis
+- Geographic Risk Analysis
+- Vintage / Cohort Analysis
+- ML-Predicted High-Risk Loans
+- Machine Learning Model Evaluation
+- Collections Priority
+
+The dashboard displays portfolio KPIs, risk tables, charts, model metrics, feature importance, and loan-level risk/collections information.
+
+---
+
+## Collections Priority
+
+The collections module focuses on active overdue loans with **1–89 DPD**.
+
+Displayed indicators include:
+
+- Customer ID
+- Product
+- City
+- Loan Amount
+- DPD
+- Credit Score
+- EMI-to-Income
+- ML Default Probability
+
+Operational ordering is based on:
+
+```text
+Higher DPD
+↓
+Higher Loan Amount
+↓
+Lower Credit Score
+```
+
+ML default probability is displayed as an additional predictive risk signal.
+
+---
+
 ## SQL Analysis
 
 MySQL was used for:
@@ -341,21 +480,79 @@ The final dataset passed the following checks:
 
 ---
 
+## System Architecture
+
+```text
+                 8,000 Loan Records
+                         |
+                         v
+              Python Processing
+                         |
+                         v
+              Feature Engineering
+                         |
+             +-----------+-----------+
+             |                       |
+             v                       v
+      Rule-Based Risk          ML Prediction
+          Scoring              Logistic Regression
+                               Random Forest
+             |                       |
+             +-----------+-----------+
+                         |
+                         v
+                  Model Evaluation
+                         |
+                         v
+                  SQLite Database
+                         |
+                         v
+                    FastAPI API
+                         |
+                      HTTP/REST
+                         |
+                         v
+                 Streamlit Dashboard
+                         |
+                         v
+              Portfolio Risk Analytics
+```
+
+---
+
 ## Project Structure
 
 ```text
 NBFC PROJECT/
 │
 ├── Data/
-│   └── loan_portfolio.csv
+│   ├── loan_portfolio.csv
+│   ├── loan_portfolio_with_ml.csv
+│   ├── ml_model_metrics.csv
+│   ├── ml_confusion_matrix.csv
+│   ├── ml_feature_importance.csv
+│   └── nbfc_risk_analytics.db
 │
 ├── Notebooks/
 │   └── NBFC_Loan_Portfolio_Risk_Analytics.ipynb
 │
 ├── SQL/
-│   └── nbfc_risk_analysis.sql
+│   ├── nbfc_risk_analysis.sql
+│   ├── sql_additions.sql
+│   └── sqlite_risk_analysis.sql
+│
+├── Screenshots/
+│   ├── dashboard_page_1.png
+│   └── dashboard_page_2.png
 │
 ├── generate_data.py
+├── ml_risk_model.py
+├── ml_evaluation.py
+├── build_sqlite.py
+├── api.py
+├── app.py
+├── generate_executive_summary.py
+├── EXECUTIVE_SUMMARY.md
 ├── NBFC_Loan_Portfolio_Risk_Analytics.pbix
 ├── README.md
 └── .gitignore
@@ -365,41 +562,97 @@ NBFC PROJECT/
 
 ## How to Run
 
-### Python
+### 1. Open the project
 
-Open:
-
-```text
-Notebooks/NBFC_Loan_Portfolio_Risk_Analytics.ipynb
+```powershell
+cd "C:\Users\KHUSHI\Documents\NBFC PROJECT"
 ```
 
-Ensure the dataset is available at:
+### 2. Run the ML pipeline
 
-```text
-Data/loan_portfolio.csv
+```powershell
+python ml_risk_model.py
 ```
 
-Run all notebook cells.
+This creates the ML-enriched loan dataset.
 
-### SQL
+### 3. Run ML evaluation
 
-Open:
-
-```text
-SQL/nbfc_risk_analysis.sql
+```powershell
+python ml_evaluation.py
 ```
 
-Run the SQL script in MySQL Workbench after importing the dataset.
+This generates:
 
-### Power BI
+- `Data/ml_model_metrics.csv`
+- `Data/ml_confusion_matrix.csv`
+- `Data/ml_feature_importance.csv`
 
-Open:
+### 4. Build the SQLite database
 
-```text
-NBFC_Loan_Portfolio_Risk_Analytics.pbix
+```powershell
+python build_sqlite.py
 ```
 
-Refresh the data if required.
+### 5. Start FastAPI
+
+```powershell
+python -m uvicorn api:app --reload
+```
+
+FastAPI runs at:
+
+```text
+http://127.0.0.1:8000
+```
+
+### 6. Start Streamlit
+
+Open another PowerShell window:
+
+```powershell
+cd "C:\Users\KHUSHI\Documents\NBFC PROJECT"
+python -m streamlit run app.py
+```
+
+Streamlit runs at:
+
+```text
+http://localhost:8501
+```
+
+Both FastAPI and Streamlit should be running for the complete application.
+
+### 7. Existing Notebook / MySQL / Power BI
+
+The original notebook, MySQL SQL analysis, and Power BI dashboard are retained as part of the project.
+
+---
+
+## Limitations
+
+This project uses a synthetic loan portfolio for analytical and demonstration purposes.
+
+- ML performance should not be interpreted as production credit-model performance.
+- Feature importance indicates model contribution, not causality.
+- Rule-based thresholds are predefined analytical rules.
+- Default predictions require validation on real historical lending data before real-world use.
+- Production deployment would require model validation, calibration, monitoring, explainability, governance, and appropriate credit-risk controls.
+
+---
+
+## Future Scope
+
+- Model calibration and threshold optimization
+- Hyperparameter tuning and cross-validation
+- Explainable AI using SHAP
+- Probability of Default calibration
+- Loss Given Default and Expected Loss modelling
+- Automated high-risk alerts
+- Authentication and role-based API access
+- Cloud deployment
+- Live loan-servicing data integration
+- Model monitoring and drift detection
 
 ---
 
@@ -407,7 +660,7 @@ Refresh the data if required.
 
 The project demonstrates an end-to-end financial risk analytics workflow combining:
 
-**Python → SQL → Power BI**
+**Python → ML → SQLite/SQL → FastAPI → Streamlit → Power BI**
 
 It converts raw loan-level data into portfolio KPIs, risk segments, delinquency analysis, and interactive business intelligence dashboards.
 
