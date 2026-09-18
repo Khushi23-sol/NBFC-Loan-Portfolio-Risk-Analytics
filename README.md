@@ -450,6 +450,16 @@ Includes:
 - Default Exposure by Risk Category
 - Customer Risk Distribution by Loan Type
 
+### Dashboard Preview
+
+#### Page 1 — Executive Portfolio Overview
+
+![NBFC Portfolio Dashboard - Page 1](Screenshots/dashboard_page_1.png)
+
+#### Page 2 — Risk Deep Dive & Customer Segmentation
+
+![NBFC Risk Dashboard - Page 2](Screenshots/dashboard_page_2.png)
+
 ---
 
 ## Data Quality Validation
