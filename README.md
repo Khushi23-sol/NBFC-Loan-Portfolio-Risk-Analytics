@@ -119,6 +119,8 @@ The project uses a synthetic NBFC loan portfolio containing:
 \- JupyterLab
 
 \- Git & GitHub
+- Joblib / persisted ML pipeline
+- Swagger / OpenAPI
 
 \---
 
@@ -470,7 +472,7 @@ This allows the application/backend workflow to reuse the trained pipeline witho
 
 SQLite is used as the application database containing the ML-enriched loan portfolio.
 
-FastAPI exposes the portfolio analytics and application workflows as REST endpoints.
+FastAPI exposes both portfolio analytics and application workflows as REST endpoints.
 
 ### Portfolio Analytics
 
@@ -484,18 +486,14 @@ GET  /api/risk/high-risk-loans
 GET  /api/collections/priority
 ```
 
-### Application Workflows
+### Loan Application Workflows
 
 ```text
 POST /api/loans
 POST /api/pipeline/simulate-new-loans
 ```
 
-**Loan Origination** accepts a new loan record through the application and sends it to the FastAPI backend.
-
-**Loan Simulation** generates/test-runs new loan scenarios so the application can demonstrate how newly simulated lending activity can be processed through the portfolio workflow.
-
-Portfolio analytics endpoints support filters for:
+Portfolio endpoints support filters for:
 
 - Product
 - City
@@ -503,7 +501,7 @@ Portfolio analytics endpoints support filters for:
 
 The API layer connects the SQLite database and application logic to the Streamlit frontend over HTTP/JSON.
 
-### API Documentation
+### Interactive API Documentation
 
 When FastAPI is running:
 
@@ -511,15 +509,15 @@ When FastAPI is running:
 http://127.0.0.1:8000/docs
 ```
 
-This provides interactive Swagger/OpenAPI documentation for testing the endpoints.
+The Swagger/OpenAPI interface can be used to inspect and test the available endpoints.
 
 ---
 
 \## Streamlit Dashboard
 
-The Streamlit application is the primary interactive frontend for the project.
+The Streamlit application is the primary interactive frontend for the project. The current UI uses a **professional dark fintech/SaaS-style interface** and communicates with FastAPI over HTTP/JSON.
 
-The current application includes a professional dark fintech/SaaS-style interface and communicates with FastAPI over HTTP.
+The current UI uses a professional dark fintech/SaaS-style design and communicates with FastAPI over HTTP/JSON.
 
 ### Application Pages
 
@@ -531,17 +529,17 @@ The current application includes a professional dark fintech/SaaS-style interfac
 
 2. **Loan Origination**
    - Enter a new loan/application
-   - Submit the loan to the FastAPI backend
-   - Process the new loan through the application workflow
+   - Submit the loan to FastAPI
+   - Demonstrate an API-driven lending workflow
 
 3. **Portfolio Risk**
-   - Filter portfolio analytics
    - Product risk
    - Credit risk
    - Geographic risk
+   - Filtered portfolio analytics
 
 4. **ML Risk**
-   - Model performance
+   - Model metrics
    - Confusion matrix
    - Feature importance
    - High-risk loan analysis
@@ -559,7 +557,7 @@ The current application includes a professional dark fintech/SaaS-style interfac
    - ML default probability
 
 7. **Loan Simulator**
-   - Simulate new loan scenarios
+   - Simulate new-loan scenarios
    - Test new-loan portfolio inputs
    - Send simulation requests through the FastAPI pipeline
 
@@ -569,7 +567,7 @@ The current application includes a professional dark fintech/SaaS-style interfac
    - Architecture
    - Project information
 
-### Application Architecture
+### Frontend ↔ Backend Flow
 
 ```text
 User
@@ -587,7 +585,47 @@ Streamlit Visualization
 
 ---
 
-\## Collections Priority
+\## Loan Origination & New-Loan Simulation
+
+The application now supports two API-driven lending workflows in addition to historical portfolio analytics.
+
+### 1. Loan Origination
+
+The **Loan Origination** page accepts a new loan/application and sends it to the FastAPI backend:
+
+```text
+Streamlit
+   ↓
+POST /api/loans
+   ↓
+FastAPI
+   ↓
+Loan Application Workflow
+```
+
+This demonstrates how the analytics platform can support an application-side lending workflow rather than only reporting historical data.
+
+### 2. New-Loan Simulator
+
+The **Loan Simulator** page provides a controlled workflow for testing simulated new-loan scenarios:
+
+```text
+Streamlit
+   ↓
+POST /api/pipeline/simulate-new-loans
+   ↓
+FastAPI Pipeline
+   ↓
+Simulated Loan Processing
+   ↓
+Portfolio / Risk Workflow
+```
+
+These workflows demonstrate the transition from static analytics to an **API-driven lending analytics application**.
+
+---
+
+## Collections Priority
 
 The collections module focuses on active overdue loans with \*\*1–89 DPD\*\*.
 
@@ -673,105 +711,146 @@ Reusable SQL views were created for:
 
 \---
 
-\## Power BI Dashboard & Business Intelligence
+\## 📊 Power BI Dashboard & Business Intelligence
 
-The Power BI dashboard is the project's dedicated **BI reporting layer** for executive portfolio monitoring and risk deep dives.
+Power BI is a **completed analytical layer of this project**, built for executive portfolio monitoring, risk analysis, segmentation, and business decision support.
 
-The Power BI report contains two analytical pages and complements the Streamlit application: **Power BI focuses on BI reporting and interactive business analysis, while Streamlit provides the API-driven application experience.**
+The project contains a dedicated Power BI report:
 
-### Power BI Dashboard
+```text
+NBFC_Loan_Portfolio_Risk_Analytics.pbix
+```
 
-The Power BI dashboard contains two analytical pages.
+The Power BI dashboard is complementary to the Streamlit application:
 
-\### BI Capabilities
+```text
+Power BI
+→ Executive BI reporting
+→ Interactive portfolio analysis
+→ Risk segmentation
+→ Exposure / default monitoring
 
-The Power BI layer demonstrates:
+Streamlit
+→ API-driven application
+→ Operational risk views
+→ ML risk
+→ Collections
+→ Loan Origination
+→ Loan Simulation
+```
 
-- Data modeling and analytical reporting
-- KPI cards
-- Interactive slicers
-- Portfolio segmentation
-- Risk distribution analysis
-- Exposure and default analysis
-- DPD monitoring
-- Executive-level dashboarding
+### Power BI Dashboard Structure
 
-### Page 1 — Executive Portfolio Overview
+The completed Power BI report contains **2 analytical pages**.
 
-Includes:
+---
 
-\- Total Customers
+### 📈 Page 1 — Executive Portfolio Overview
 
-\- Portfolio Exposure
+This page provides an executive-level view of the overall NBFC portfolio.
 
-\- Default Rate
+#### KPI Cards
 
-\- Default Exposure
+The dashboard includes:
 
-\- 90+ DPD Exposure
+- **Total Customers**
+- **Total Portfolio Exposure**
+- **Default Rate**
+- **Default Exposure**
+- **90+ DPD Exposure**
 
-\- Exposure by Loan Type
+#### Portfolio & Risk Visualizations
 
-\- Default Rate by Loan Type
+The page includes:
 
-\- Customer Risk Distribution
+- **Exposure by Loan Type**
+- **Default Rate by Loan Type**
+- **Customer Risk Distribution**
+- **DPD Analysis**
+- **Employment Risk**
+- **City Risk**
 
-\- DPD Analysis
+These visuals allow portfolio performance and risk concentration to be reviewed from multiple business dimensions.
 
-\- Employment Risk
+#### Interactive Slicers
 
-\- City Risk
+The executive page includes slicers for:
 
-Interactive slicers are available for:
+- **Loan Type**
+- **Risk Category**
+- **Employment Type**
+- **City**
 
-\- Loan Type
+This allows the portfolio to be dynamically filtered for segment-level analysis.
 
-\- Risk Category
+---
 
-\- Employment Type
+### 🔎 Page 2 — Risk Deep Dive & Customer Segmentation
 
-\- City
+The second page focuses on borrower-level risk drivers and customer segmentation.
 
-\### Page 2 — Risk Deep Dive & Customer Segmentation
+#### Risk Analysis
 
-Includes:
+The page includes:
 
-\- Credit Risk Analysis
+- **Credit Risk Analysis**
+- **EMI Burden Analysis**
+- **Loan-to-Income Analysis**
+- **Risk Category Exposure**
+- **Default Exposure by Risk Category**
+- **Customer Risk Distribution by Loan Type**
 
-\- EMI Burden Analysis
+This page connects borrower affordability and exposure indicators with the project's rule-based risk segmentation.
 
-\- Loan-to-Income Analysis
+---
 
-\- Risk Category Exposure
+### 🖼️ Power BI Dashboard Preview
 
-\- Default Exposure by Risk Category
+#### Page 1 — Executive Portfolio Overview
 
-\- Customer Risk Distribution by Loan Type
+![NBFC Portfolio Dashboard - Page 1](Screenshots/dashboard_page_1.png)
 
-\### Dashboard Preview
+#### Page 2 — Risk Deep Dive & Customer Segmentation
 
-\#### BI Capabilities
+![NBFC Risk Dashboard - Page 2](Screenshots/dashboard_page_2.png)
 
-The Power BI layer demonstrates:
+---
 
-- Data modeling and analytical reporting
-- KPI cards
-- Interactive slicers
-- Portfolio segmentation
-- Risk distribution analysis
-- Exposure and default analysis
-- DPD monitoring
-- Executive-level dashboarding
+### 💼 Business Intelligence Layer
 
-### Page 1 — Executive Portfolio Overview
+The Power BI implementation demonstrates how the same loan-level dataset can be transformed into an executive-facing BI product.
 
-![NBFC Portfolio Dashboard - Page 1]\(Screenshots/dashboard_page_1.png)
+```text
+Loan Portfolio Data
+        ↓
+Data Preparation / SQL Analysis
+        ↓
+Portfolio & Risk Metrics
+        ↓
+Power BI Data Model
+        ↓
+Interactive Visualizations
+        ↓
+Executive Portfolio Monitoring
+```
 
-\#### Page 2 — Risk Deep Dive & Customer Segmentation
+The BI layer supports analysis of:
 
-![NBFC Risk Dashboard - Page 2]\(Screenshots/dashboard_page_2.png)
+- Portfolio size and exposure
+- Default performance
+- Product concentration
+- Credit-risk segmentation
+- EMI affordability
+- Loan-to-income exposure
+- Delinquency / DPD
+- Employment segments
+- Geographic segments
+- Risk-category exposure
+- Default exposure
 
-\---
+Power BI is therefore part of the **completed project**, not just a future enhancement.
+
+---
 
 \## Data Quality Validation
 
@@ -889,7 +968,64 @@ The final dataset passed the following checks:
 
 \---
 
-\## Project Structure
+\## 🔗 Project Links
+
+### GitHub Repository
+
+[**NBFC Loan Portfolio & Credit Risk Analytics**](https://github.com/Khushi23-sol/NBFC-Loan-Portfolio-Risk-Analytics)
+
+The repository contains the complete source code, notebook, SQL analysis, Power BI report, ML outputs, SQLite database, FastAPI backend, Streamlit application, and documentation.
+
+### Streamlit Application
+
+Run the interactive application locally at:
+
+```text
+http://localhost:8501
+```
+
+Start it with:
+
+```powershell
+python -m streamlit run app.py
+```
+
+The application includes:
+
+- Portfolio Overview
+- Loan Origination
+- Portfolio Risk
+- ML Risk
+- Vintage Analysis
+- Collections
+- Loan Simulator
+- About
+
+### FastAPI Backend
+
+Run the backend locally at:
+
+```text
+http://127.0.0.1:8000
+```
+
+Interactive Swagger/OpenAPI documentation:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Start it with:
+
+```powershell
+python -m uvicorn api:app --reload
+```
+
+> The project currently documents local application endpoints; no public deployment URL is claimed.
+
+---
+
+## Project Structure
 
 \`\`\`text
 
@@ -943,6 +1079,7 @@ NBFC PROJECT/
 
 ├── ml_evaluation.py
 
+├── live_loan_simulator.py
 ├── build_sqlite.py
 
 ├── api.py
@@ -1097,16 +1234,16 @@ The project demonstrates an end-to-end financial risk analytics workflow combini
 
 \*\*Python → ML → SQLite/SQL → FastAPI → Streamlit → Power BI\*\*
 
-It converts raw loan-level data into portfolio KPIs, risk segments, delinquency analysis, and interactive business intelligence dashboards.
+It converts raw loan-level data into portfolio KPIs, risk segments, delinquency analysis, ML risk predictions, collections priorities, API-driven loan workflows, new-loan simulations, and a **completed Power BI business intelligence dashboard** for executive and risk analysis.
 
 \---
 
 \## Author
 
-\*\*Khushi Solanki\*\*
+**Khushi Solanki**
 
-B.Tech Mechanical Engineering  
-
-Honors in Robotics  
-
+B.Tech Mechanical Engineering  
+Honors in Robotics  
 DJSCE, Mumbai
+
+[**GitHub Repository → NBFC Loan Portfolio & Credit Risk Analytics**](https://github.com/Khushi23-sol/NBFC-Loan-Portfolio-Risk-Analytics)
