@@ -1,152 +1,225 @@
 """
-ML Probability-of-Default Model (Addition to the Rule-Based Risk Score)
-==========================================================================
-This ADDS a trained ML model alongside your existing rule-based risk score
-- it does not replace it. In interviews, you can now say: "I built a
-rule-based scoring system first for transparency and explainability, then
-validated it by training an ML model and comparing performance."
+NBFC Loan Portfolio Risk Analytics — ML Model Training
 
-IMPORTANT: Run this AFTER your existing generate_data.py / notebook has
-created loan_portfolio.csv. This reads that same file - column names below
-match your documented schema exactly:
-customer_id, age, city, employment_type, monthly_income, credit_score,
-loan_amount, loan_type, tenure_months, interest_rate, emi, days_past_due,
-default_flag, disbursement_date, emi_to_income, loan_to_annual_income
+Trains Logistic Regression and Random Forest models on the original
+synthetic loan portfolio, evaluates them, writes the ML-enriched dataset,
+and saves the complete Random Forest preprocessing + model pipeline for
+scoring newly simulated loans without retraining.
 
-If your actual CSV has slightly different column names, adjust the
-`features` list below to match.
+Important:
+- `days_past_due` is intentionally excluded from ML features to avoid
+  target leakage.
+- The existing rule-based risk score is not replaced.
+- The raw source dataset is never modified.
 """
 
-import pandas as pd
+import os
+from pathlib import Path
+
+import joblib
 import numpy as np
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+import pandas as pd
+
 from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    classification_report,
+    confusion_matrix,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import roc_auc_score, classification_report, precision_score, recall_score
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
-# --- Load your existing data ---
-df = pd.read_csv("Data/loan_portfolio.csv")  # adjust path if running from a different folder
+BASE_DIR = Path(__file__).resolve().parent
+DATA_PATH = BASE_DIR / "Data" / "loan_portfolio.csv"
+OUTPUT_PATH = BASE_DIR / "Data" / "loan_portfolio_with_ml.csv"
+METRICS_PATH = BASE_DIR / "Data" / "ml_model_metrics.csv"
+CONFUSION_PATH = BASE_DIR / "Data" / "ml_confusion_matrix.csv"
+IMPORTANCE_PATH = BASE_DIR / "Data" / "ml_feature_importance.csv"
+MODEL_DIR = BASE_DIR / "models"
+MODEL_PATH = MODEL_DIR / "rf_risk_pipeline.joblib"
 
-# If emi_to_income / loan_to_annual_income aren't already columns, compute them
-# (they should already exist per your project - this is just a safety check)
+RANDOM_STATE = 42
+
+if not DATA_PATH.exists():
+    raise FileNotFoundError(f"Could not find {DATA_PATH}")
+
+df = pd.read_csv(DATA_PATH)
+
+required = [
+    "customer_id", "age", "city", "employment_type", "monthly_income",
+    "credit_score", "product", "loan_amount", "tenure_months",
+    "interest_rate", "emi", "disbursement_date", "days_past_due",
+    "default_flag",
+]
+missing = [c for c in required if c not in df.columns]
+if missing:
+    raise ValueError(f"Missing required columns: {missing}")
+
+# Recreate analytical numeric features if necessary.
 if "emi_to_income" not in df.columns:
-    df["emi_to_income"] = df["emi"] / df["monthly_income"] * 100
-if "loan_to_annual_income" not in df.columns:
-    df["loan_to_annual_income"] = df["loan_amount"] / (df["monthly_income"] * 12)
+    df["emi_to_income"] = np.where(
+        df["monthly_income"] > 0,
+        df["emi"] / df["monthly_income"] * 100,
+        np.nan,
+    )
 
-# --- Define features and target ---
-features = [
+if "loan_to_annual_income" not in df.columns:
+    df["loan_to_annual_income"] = np.where(
+        df["monthly_income"] > 0,
+        df["loan_amount"] / (df["monthly_income"] * 12),
+        np.nan,
+    )
+
+numeric_features = [
     "age",
     "monthly_income",
     "credit_score",
     "loan_amount",
     "tenure_months",
     "interest_rate",
-    "product",
-    "employment_type",
-    "city",
     "emi_to_income",
-    "loan_to_annual_income"
+    "loan_to_annual_income",
 ]
-target = "default_flag"
-
-X = df[features]
-y = df[target]
-
-numeric_features = ["age", "monthly_income", "credit_score", "loan_amount", "tenure_months",
-                     "interest_rate", "emi_to_income", "loan_to_annual_income"]
 categorical_features = ["product", "employment_type", "city"]
+features = numeric_features + categorical_features
 
-preprocessor = ColumnTransformer([
-    ("num", StandardScaler(), numeric_features),
-    ("cat", OneHotEncoder(handle_unknown="ignore"), categorical_features),
-])
+X = df[features].copy()
+y = df["default_flag"].astype(int)
+
+if X.isna().any().any():
+    raise ValueError("Missing values found in model features.")
+
+if y.nunique() != 2:
+    raise ValueError("default_flag must contain exactly two classes.")
 
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42, stratify=y
+    X,
+    y,
+    test_size=0.20,
+    random_state=RANDOM_STATE,
+    stratify=y,
 )
 
-# --- Model 1: Logistic Regression (interpretable baseline) ---
-logit_model = Pipeline([
-    ("preprocess", preprocessor),
-    ("classifier", LogisticRegression(max_iter=1000, class_weight="balanced")),
-])
+def make_preprocessor():
+    return ColumnTransformer(
+        transformers=[
+            ("num", StandardScaler(), numeric_features),
+            ("cat", OneHotEncoder(handle_unknown="ignore"), categorical_features),
+        ]
+    )
+
+logit_model = Pipeline(
+    steps=[
+        ("preprocess", make_preprocessor()),
+        (
+            "classifier",
+            LogisticRegression(
+                max_iter=1000,
+                class_weight="balanced",
+                random_state=RANDOM_STATE,
+            ),
+        ),
+    ]
+)
+
+rf_model = Pipeline(
+    steps=[
+        ("preprocess", make_preprocessor()),
+        (
+            "classifier",
+            RandomForestClassifier(
+                n_estimators=300,
+                max_depth=8,
+                min_samples_leaf=20,
+                class_weight="balanced",
+                random_state=RANDOM_STATE,
+                n_jobs=-1,
+            ),
+        ),
+    ]
+)
+
 logit_model.fit(X_train, y_train)
-logit_proba = logit_model.predict_proba(X_test)[:, 1]
-logit_auc = roc_auc_score(y_test, logit_proba)
-
-# --- Model 2: Random Forest (more powerful, non-linear) ---
-rf_model = Pipeline([
-    ("preprocess", preprocessor),
-    ("classifier", RandomForestClassifier(
-        n_estimators=300, max_depth=8, min_samples_leaf=20,
-        class_weight="balanced", random_state=42
-    )),
-])
 rf_model.fit(X_train, y_train)
+
+logit_proba = logit_model.predict_proba(X_test)[:, 1]
 rf_proba = rf_model.predict_proba(X_test)[:, 1]
-rf_auc = roc_auc_score(y_test, rf_proba)
-rf_pred = rf_model.predict(X_test)
 
-print("=" * 60)
-print("ML PROBABILITY-OF-DEFAULT MODEL RESULTS")
-print("=" * 60)
-print(f"\nLogistic Regression ROC-AUC: {logit_auc:.3f}")
-print(f"Random Forest ROC-AUC:       {rf_auc:.3f}")
-print(f"\nPrecision (Random Forest, Default class): {precision_score(y_test, rf_pred):.3f}")
-print(f"Recall (Random Forest, Default class):    {recall_score(y_test, rf_pred):.3f}")
+logit_pred = (logit_proba >= 0.50).astype(int)
+rf_pred = (rf_proba >= 0.50).astype(int)
 
-print("\nFull Classification Report (Random Forest):")
-print(classification_report(y_test, rf_pred, target_names=["No Default", "Default"]))
+metrics_df = pd.DataFrame(
+    {
+        "model": ["Logistic Regression", "Random Forest"],
+        "roc_auc": [
+            roc_auc_score(y_test, logit_proba),
+            roc_auc_score(y_test, rf_proba),
+        ],
+        "precision_default_class": [
+            precision_score(y_test, logit_pred, zero_division=0),
+            precision_score(y_test, rf_pred, zero_division=0),
+        ],
+        "recall_default_class": [
+            recall_score(y_test, logit_pred, zero_division=0),
+            recall_score(y_test, rf_pred, zero_division=0),
+        ],
+    }
+)
 
-# --- Feature Importance ---
-feature_names = (numeric_features +
-                  list(rf_model.named_steps["preprocess"]
-                       .named_transformers_["cat"]
-                       .get_feature_names_out(categorical_features)))
-importances = rf_model.named_steps["classifier"].feature_importances_
-importance_df = pd.DataFrame({"feature": feature_names, "importance": importances}) \
-    .sort_values("importance", ascending=False).head(10)
-print("\nTop 10 ML-Identified Risk Drivers:")
-print(importance_df.to_string(index=False))
+report = classification_report(
+    y_test,
+    rf_pred,
+    output_dict=True,
+    zero_division=0,
+)
 
-# ------------------------------------------------------------
-# SCORE ALL 8,000 LOANS WITH TRAINED RANDOM FOREST
-# ------------------------------------------------------------
+print("\nRandom Forest classification report:")
+print(classification_report(y_test, rf_pred, zero_division=0))
 
+cm = confusion_matrix(y_test, rf_pred)
+confusion_df = pd.DataFrame(
+    cm,
+    index=["Actual No Default", "Actual Default"],
+    columns=["Predicted No Default", "Predicted Default"],
+)
+
+# Feature importance from the fitted RF pipeline.
+preprocessor = rf_model.named_steps["preprocess"]
+classifier = rf_model.named_steps["classifier"]
+feature_names = preprocessor.get_feature_names_out()
+
+importance_df = pd.DataFrame(
+    {
+        "feature": feature_names,
+        "importance": classifier.feature_importances_,
+    }
+).sort_values("importance", ascending=False)
+
+# Score the complete analytical dataset.
 df["ml_predicted_probability"] = rf_model.predict_proba(X)[:, 1]
 
-# Save ML-enhanced dataset
-df.to_csv(
-    "Data/loan_portfolio_with_ml.csv",
-    index=False
-)
+MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
-print("\nML probabilities generated for all loans.")
-print(
-    "Probability coverage:",
-    df["ml_predicted_probability"].notna().sum(),
-    "/",
-    len(df)
-)
+# Save the complete preprocessing + RF pipeline.
+joblib.dump(rf_model, MODEL_PATH)
 
-# --- Compare ML model against your existing rule-based score ---
-if "risk_score" in df.columns or "customer_risk_score" in df.columns:
-    score_col = "risk_score" if "risk_score" in df.columns else "customer_risk_score"
-    test_indices = X_test.index
-    rule_scores = df.loc[test_indices, score_col]
-    correlation = np.corrcoef(rule_scores, rf_proba)[0, 1]
-    print(f"\nCorrelation between rule-based score and ML predicted probability: {correlation:.3f}")
-    print("(A positive correlation validates that your rule-based logic captures similar risk signal as the ML model)")
-else:
-    print("\nNote: rule-based risk_score column not found in this CSV - "
-          "add it to df before running this comparison, or run this after your "
-          "notebook has computed and saved it.")
+OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+df.to_csv(OUTPUT_PATH, index=False)
+metrics_df.to_csv(METRICS_PATH, index=False)
+confusion_df.to_csv(CONFUSION_PATH)
+importance_df.to_csv(IMPORTANCE_PATH, index=False)
 
-# --- Save ML predictions alongside existing data ---
-df.loc[X_test.index, "ml_predicted_probability"] = rf_proba
-df.to_csv("Data/loan_portfolio_with_ml.csv", index=False)
-print("\nSaved Data/loan_portfolio_with_ml.csv with ML predictions added.")
+print("=" * 70)
+print("ML PIPELINE COMPLETE")
+print("=" * 70)
+print(f"Rows scored              : {len(df):,}")
+print(f"Logistic Regression AUC  : {metrics_df.iloc[0]['roc_auc']:.3f}")
+print(f"Random Forest AUC        : {metrics_df.iloc[1]['roc_auc']:.3f}")
+print(f"Saved ML dataset         : {OUTPUT_PATH}")
+print(f"Saved model pipeline     : {MODEL_PATH}")
+print("=" * 70)

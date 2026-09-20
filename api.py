@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
 import sqlite3
 import pandas as pd
 
@@ -13,6 +14,20 @@ DB_PATH = "Data/nbfc_risk_analytics.db"
 
 def get_connection():
     return sqlite3.connect(DB_PATH)
+
+
+class LoanSubmission(BaseModel):
+    """Loan-originations payload submitted by a loan officer / LOS."""
+    age: int = Field(..., ge=18, le=80)
+    city: str
+    employment_type: str
+    monthly_income: float = Field(..., gt=0)
+    credit_score: int = Field(..., ge=300, le=900)
+    product: str
+    loan_amount: float = Field(..., gt=0)
+    tenure_months: int = Field(..., ge=6, le=360)
+    interest_rate: float = Field(..., ge=0, le=30)
+
 
 
 # ============================================================
@@ -543,3 +558,108 @@ def collections_priority(
     return result.to_dict(
         orient="records"
     )
+
+# ============================================================
+# 8. LIVE LOAN SIMULATION PIPELINE
+# ============================================================
+
+@app.post("/api/pipeline/simulate-new-loans")
+def simulate_new_loans(n: int = 20, seed: int = None):
+    """
+    Generate realistic new loans, score them with the saved Random Forest
+    pipeline and existing rule-based score, then append them to both the
+    analytical CSV and SQLite database.
+    """
+    if n < 1 or n > 500:
+        raise HTTPException(
+            status_code=400,
+            detail="n must be between 1 and 500."
+        )
+
+    try:
+        from live_loan_simulator import simulate_and_append
+
+        result = simulate_and_append(n=n, seed=seed)
+
+        new_df = result["new_loans"]
+
+        return {
+            "status": "success",
+            "message": f"{result['added']} new loans simulated and added.",
+            "loans_added": result["added"],
+            "csv_total": result["csv_total"],
+            "sqlite_total": result["sqlite_total"],
+            "new_loans": new_df[
+                [
+                    "customer_id",
+                    "product",
+                    "city",
+                    "credit_score",
+                    "risk_score",
+                    "risk_category",
+                    "ml_predicted_probability",
+                ]
+            ].to_dict(orient="records"),
+        }
+
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Live simulation failed: {e}"
+        )
+
+# ============================================================
+# 9. SINGLE LOAN ORIGINATION / AUTO-SCORING
+# ============================================================
+
+@app.post("/api/loans")
+def create_loan(loan: LoanSubmission):
+    """
+    Accept one newly originated loan, calculate analytical features,
+    apply the rule-based risk score and saved Random Forest model,
+    and persist the scored loan to CSV + SQLite.
+
+    This represents a loan officer / loan-origination-system submission.
+    """
+    try:
+        from live_loan_simulator import score_manual_loan
+
+        result = score_manual_loan(loan.model_dump())
+        row = result["new_loans"].iloc[0]
+
+        return {
+            "status": "success",
+            "message": "Loan originated, scored and added to the portfolio.",
+            "customer_id": row["customer_id"],
+            "csv_total": result["csv_total"],
+            "sqlite_total": result["sqlite_total"],
+            "loan": {
+                "customer_id": row["customer_id"],
+                "product": row["product"],
+                "city": row["city"],
+                "credit_score": int(row["credit_score"]),
+                "loan_amount": float(row["loan_amount"]),
+                "emi": float(row["emi"]),
+                "emi_to_income": float(row["emi_to_income"]),
+                "loan_to_annual_income": float(row["loan_to_annual_income"]),
+                "risk_score": int(row["risk_score"]),
+                "risk_category": row["risk_category"],
+                "ml_predicted_probability": float(row["ml_predicted_probability"]),
+            },
+        }
+
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Loan submission failed: {e}")
+
