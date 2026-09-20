@@ -1,132 +1,173 @@
-**# NBFC Loan Portfolio Risk & Analytics**
+# 🏦 NBFC Loan Portfolio Risk & Analytics
 
-**## Project Overview**
+### End-to-End Credit Risk • Machine Learning • Portfolio Analytics • BI • API Platform
 
-This project analyzes an NBFC loan portfolio to identify credit risk, affordability risk, delinquency patterns, portfolio concentration, and default exposure.
+<p align="center">
+  <strong>Python · SQL · scikit-learn · FastAPI · SQLite · Streamlit · Power BI</strong>
+</p>
 
-The project follows an end-to-end analytics workflow using **\*\*Python, SQL, Machine Learning, FastAPI, SQLite, Streamlit, and Power BI\*\***.
+<p align="center">
+  <a href="https://github.com/Khushi23-sol/NBFC-Loan-Portfolio-Risk-Analytics">GitHub Repository</a>
+</p>
 
-\---
+## 🧭 Quick Navigation
 
-**## Business Problem**
+| Section | Focus |
+|---|---|
+| [Business Problem](#business-problem) | Lending-risk questions |
+| [Dataset](#dataset) | Portfolio data |
+| [Risk Analysis](#risk-analysis) | Product, credit, affordability & DPD |
+| [Customer Risk Scoring](#customer-risk-scoring) | Rule-based segmentation |
+| [Machine Learning](#machine-learning-default-prediction) | Default prediction |
+| [FastAPI & SQLite](#sqlite--fastapi-analytics-layer) | Backend and data layer |
+| [Streamlit](#streamlit-dashboard) | Interactive application |
+| [Loan Workflows](#loan-origination--new-loan-simulation) | Origination & simulation |
+| [Collections](#collections-priority) | Operational prioritization |
+| [Power BI](#-power-bi-dashboard--business-intelligence) | Executive BI reporting |
+| [How to Run](#how-to-run) | Local setup |
+
+---
+
+## Project Overview
+
+This project is an end-to-end **NBFC loan portfolio, credit risk, machine learning, collections, and portfolio analytics platform** built around an **8,000-record synthetic loan portfolio**.
+
+It combines:
+
+- 📊 Portfolio and credit-risk analytics
+- 🧮 Rule-based customer risk scoring
+- 🤖 Logistic Regression and Random Forest
+- 🗄️ MySQL and SQLite analytics
+- 🔌 FastAPI REST backend
+- 🖥️ Streamlit application
+- 💰 Collections prioritization
+- 🏦 Loan Origination workflow
+- 🧪 New-Loan Simulation workflow
+- 📈 Power BI executive and risk dashboards
+
+> **Synthetic-data disclaimer:** The dataset is synthetic and is intended for analytics, modeling, and application demonstration. ML results should not be interpreted as production credit-performance estimates.
+
+---
+
+## Business Problem
 
 NBFCs need to continuously monitor their loan portfolio to identify customers and segments that may create higher credit losses.
 
 This project focuses on answering key business questions:
 
-\- Which loan products have higher default risk?
+- Which loan products have higher default risk?
 
-\- How does credit score relate to default rates?
+- How does credit score relate to default rates?
 
-\- Which customers have higher EMI affordability risk?
+- Which customers have higher EMI affordability risk?
 
-\- How does loan-to-income exposure vary across customers?
+- How does loan-to-income exposure vary across customers?
 
-\- Which employment and city segments show higher risk?
+- Which employment and city segments show higher risk?
 
-\- How much portfolio exposure is currently in 90+ DPD?
+- How much portfolio exposure is currently in 90+ DPD?
 
-\- Which customer risk segments require closer monitoring?
+- Which customer risk segments require closer monitoring?
 
-\- Where is the portfolio most concentrated?
+- Where is the portfolio most concentrated?
 
-\---
+---
 
-**## Objectives**
+## Objectives
 
-1\. Analyze overall portfolio exposure and default performance.
+1. Analyze overall portfolio exposure and default performance.
 
-2\. Identify high-risk loan products and customer segments.
+2. Identify high-risk loan products and customer segments.
 
-3\. Analyze credit score, EMI burden, and loan-to-income risk.
+3. Analyze credit score, EMI burden, and loan-to-income risk.
 
-4\. Study delinquency using Days Past Due (DPD).
+4. Study delinquency using Days Past Due (DPD).
 
-5\. Build a rule-based customer risk segmentation model.
+5. Build a rule-based customer risk segmentation model.
 
-6\. Build Logistic Regression and Random Forest default prediction models.
+6. Build Logistic Regression and Random Forest default prediction models.
 
-7\. Evaluate models using ROC-AUC, precision, recall, confusion matrix, and feature importance.
+7. Evaluate models using ROC-AUC, precision, recall, confusion matrix, and feature importance.
 
-8\. Store the ML-enriched portfolio in SQLite and expose analytics through FastAPI.
+8. Store the ML-enriched portfolio in SQLite and expose analytics through FastAPI.
 
-9\. Develop an interactive Streamlit risk dashboard in addition to the existing Power BI dashboard.
+9. Develop an interactive Streamlit risk dashboard in addition to the existing Power BI dashboard.
 
-10\. Support collections prioritization using DPD, exposure, credit score, and ML probability.
+10. Support collections prioritization using DPD, exposure, credit score, and ML probability.
 
-\---
+---
 
 \## Dataset
 
 The project uses a synthetic NBFC loan portfolio containing:
 
-\- \*\*8,000\*\* loan/customer records
+- **8,000** loan/customer records
 
-\- Customer demographics
+- Customer demographics
 
-\- Employment information
+- Employment information
 
-\- Monthly income
+- Monthly income
 
-\- Credit score
+- Credit score
 
-\- Loan amount
+- Loan amount
 
-\- Loan type
+- Loan type
 
-\- Tenure
+- Tenure
 
-\- Interest rate
+- Interest rate
 
-\- EMI
+- EMI
 
-\- Days Past Due (DPD)
+- Days Past Due (DPD)
 
-\- Default flag
+- Default flag
 
-\- Application date
+- Application date
 
-\---
+---
 
 \## Tools & Technologies
 
-\- Python
+- Python
 
-\- Pandas
+- Pandas
 
-\- NumPy
+- NumPy
 
-\- Matplotlib
+- Matplotlib
 
-\- scikit-learn
+- scikit-learn
 
-\- Logistic Regression
+- Logistic Regression
 
-\- Random Forest
+- Random Forest
 
-\- SQLite
+- SQLite
 
-\- MySQL
+- MySQL
 
-\- FastAPI
+- FastAPI
 
-\- Uvicorn
+- Uvicorn
 
-\- Streamlit
+- Streamlit
 
-\- Power BI
+- Power BI
 
-\- JupyterLab
+- JupyterLab
 
-\- Git & GitHub
+- Git & GitHub
 - Joblib / persisted ML pipeline
 - Swagger / OpenAPI
 
-\---
+---
 
 \## Project Workflow
 
-\`\`\`text
+```text
 
 Synthetic Dataset
 
@@ -186,9 +227,9 @@ Collections & Portfolio Risk Insights
 
 Power BI Analytical Dashboard
 
-\`\`\`
+```
 
-\---
+---
 
 \## Portfolio KPIs
 
@@ -222,7 +263,7 @@ Power BI Analytical Dashboard
 
 \| High-Risk Default Exposure | ₹11.55 Cr |
 
-\---
+---
 
 \## Risk Analysis
 
@@ -230,17 +271,17 @@ Power BI Analytical Dashboard
 
 The portfolio was analyzed across:
 
-\- Personal Loan
+- Personal Loan
 
-\- Home Loan
+- Home Loan
 
-\- Business Loan
+- Business Loan
 
-\- Vehicle Loan
+- Vehicle Loan
 
-\- Gold Loan
+- Gold Loan
 
-Business Loans showed the highest observed default rate among the loan products at approximately \*\*15.46%\*\*.
+Business Loans showed the highest observed default rate among the loan products at approximately **15.46%**.
 
 Home Loans represented the largest share of total portfolio exposure.
 
@@ -248,15 +289,15 @@ Home Loans represented the largest share of total portfolio exposure.
 
 Customers were grouped into:
 
-\- Poor
+- Poor
 
-\- Fair
+- Fair
 
-\- Good
+- Good
 
-\- Very Good
+- Very Good
 
-\- Excellent
+- Excellent
 
 The analysis compares customer volume, exposure, defaults, default rate, and default exposure across credit risk bands.
 
@@ -264,29 +305,29 @@ The analysis compares customer volume, exposure, defaults, default rate, and def
 
 Customers were segmented using the EMI-to-income ratio:
 
-\- Low Burden
+- Low Burden
 
-\- Moderate
+- Moderate
 
-\- High
+- High
 
-\- Very High
+- Very High
 
-The \*\*Very High EMI Burden\*\* segment showed the highest observed default rate.
+The **Very High EMI Burden** segment showed the highest observed default rate.
 
 \### 4. Loan-to-Income Analysis
 
 Loan-to-annual-income ratios were grouped into:
 
-\- <0.5x
+- <0.5x
 
-\- 0.5–1x
+- 0.5–1x
 
-\- 1–2x
+- 1–2x
 
-\- 2–3x
+- 2–3x
 
-\- 3x+
+- 3x+
 
 This analysis helps identify customers with relatively high loan exposure compared with annual income.
 
@@ -294,11 +335,11 @@ This analysis helps identify customers with relatively high loan exposure compar
 
 The portfolio was analyzed across:
 
-\- Salaried
+- Salaried
 
-\- Self-employed
+- Self-employed
 
-\- Business Owner
+- Business Owner
 
 Business Owners showed the highest observed default rate among the employment segments.
 
@@ -306,43 +347,43 @@ Business Owners showed the highest observed default rate among the employment se
 
 Default rates and portfolio exposure were compared across major cities including:
 
-\- Mumbai
+- Mumbai
 
-\- Delhi
+- Delhi
 
-\- Bengaluru
+- Bengaluru
 
-\- Hyderabad
+- Hyderabad
 
-\- Chennai
+- Chennai
 
-\- Pune
+- Pune
 
-\- Ahmedabad
+- Ahmedabad
 
-\- Jaipur
+- Jaipur
 
-\- Kolkata
+- Kolkata
 
-\- Lucknow
+- Lucknow
 
 \### 7. Delinquency / DPD Analysis
 
 Customers were categorized using Days Past Due:
 
-\- Current
+- Current
 
-\- 1–30 DPD
+- 1–30 DPD
 
-\- 31–60 DPD
+- 31–60 DPD
 
-\- 61–89 DPD
+- 61–89 DPD
 
-\- 90+ DPD
+- 90+ DPD
 
-The portfolio contains approximately \*\*₹50.03 Cr\*\* of exposure in the 90+ DPD category.
+The portfolio contains approximately **₹50.03 Cr** of exposure in the 90+ DPD category.
 
-\---
+---
 
 \## Customer Risk Scoring
 
@@ -362,7 +403,7 @@ Based on loan amount relative to annual income.
 
 \### Total Risk Score
 
-\`\`\`text
+```text
 
 Risk Score = Credit Risk Score
 
@@ -370,11 +411,11 @@ Risk Score = Credit Risk Score
 
            + LTI Risk Score
 
-\`\`\`
+```
 
 Customers were classified into:
 
-\`\`\`text
+```text
 
 0–33   → Low Risk
 
@@ -382,7 +423,7 @@ Customers were classified into:
 
 67–100 → High Risk
 
-\`\`\`
+```
 
 \### Risk Segment Results
 
@@ -396,19 +437,19 @@ Customers were classified into:
 
 \| High Risk | 605 | 16.36% | ₹84.09 Cr |
 
-\---
+---
 
 \## Machine Learning Default Prediction
 
 Two classification models were implemented:
 
-\- Logistic Regression
+- Logistic Regression
 
-\- Random Forest
+- Random Forest
 
 The ML feature set uses borrower, loan, employment, geographic, affordability, and exposure-related variables.
 
-\`days_past_due\` is excluded from the predictive feature set to avoid using a post-disbursement delinquency indicator as a predictor of default.
+`days_past_due` is excluded from the predictive feature set to avoid using a post-disbursement delinquency indicator as a predictor of default.
 
 \### Model Results
 
@@ -422,9 +463,9 @@ The ML feature set uses borrower, loan, employment, geographic, affordability, a
 
 Random Forest test-set metrics:
 
-\- Precision for default class: \*\*0.185\*\*
+- Precision for default class: **0.185**
 
-\- Recall for default class: \*\*0.345\*\*
+- Recall for default class: **0.345**
 
 These results represent a baseline model evaluated on synthetic data rather than a production credit model.
 
@@ -466,7 +507,7 @@ models/rf_risk_pipeline.joblib
 
 This allows the application/backend workflow to reuse the trained pipeline without retraining the model for every request.
 
-\---
+---
 
 \## SQLite & FastAPI Analytics Layer
 
@@ -500,6 +541,20 @@ Portfolio endpoints support filters for:
 - Credit Band
 
 The API layer connects the SQLite database and application logic to the Streamlit frontend over HTTP/JSON.
+
+### API Endpoint Summary
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/api/portfolio/summary` | Portfolio KPIs |
+| `GET` | `/api/portfolio/product-risk` | Product-level risk |
+| `GET` | `/api/portfolio/credit-risk` | Credit-band analysis |
+| `GET` | `/api/portfolio/city-risk` | Geographic risk |
+| `GET` | `/api/portfolio/vintage` | Cohort/vintage analysis |
+| `GET` | `/api/risk/high-risk-loans` | High-risk loan view |
+| `GET` | `/api/collections/priority` | Collections priority |
+| `POST` | `/api/loans` | Loan origination |
+| `POST` | `/api/pipeline/simulate-new-loans` | New-loan simulation |
 
 ### Interactive API Documentation
 
@@ -627,29 +682,29 @@ These workflows demonstrate the transition from static analytics to an **API-dri
 
 ## Collections Priority
 
-The collections module focuses on active overdue loans with \*\*1–89 DPD\*\*.
+The collections module focuses on active overdue loans with **1–89 DPD**.
 
 Displayed indicators include:
 
-\- Customer ID
+- Customer ID
 
-\- Product
+- Product
 
-\- City
+- City
 
-\- Loan Amount
+- Loan Amount
 
-\- DPD
+- DPD
 
-\- Credit Score
+- Credit Score
 
-\- EMI-to-Income
+- EMI-to-Income
 
-\- ML Default Probability
+- ML Default Probability
 
 Operational ordering is based on:
 
-\`\`\`text
+```text
 
 Higher DPD
 
@@ -661,87 +716,134 @@ Higher Loan Amount
 
 Lower Credit Score
 
-\`\`\`
+```
 
 ML default probability is displayed as an additional predictive risk signal.
 
-\---
+---
 
 \## SQL Analysis
 
 MySQL was used for:
 
-\- Data validation
+- Data validation
 
-\- Portfolio KPI calculations
+- Portfolio KPI calculations
 
-\- Product risk analysis
+- Product risk analysis
 
-\- Credit risk analysis
+- Credit risk analysis
 
-\- EMI burden analysis
+- EMI burden analysis
 
-\- Employment risk analysis
+- Employment risk analysis
 
-\- City risk analysis
+- City risk analysis
 
-\- DPD analysis
+- DPD analysis
 
-\- Customer risk segmentation
+- Customer risk segmentation
 
-\- Portfolio concentration analysis
+- Portfolio concentration analysis
 
-\- Risk priority analysis
+- Risk priority analysis
 
-\- KPI reconciliation
+- KPI reconciliation
 
 Reusable SQL views were created for:
 
-\- Customer Risk Scores
+- Customer Risk Scores
 
-\- Portfolio KPIs
+- Portfolio KPIs
 
-\- Product Risk Summary
+- Product Risk Summary
 
-\- Employment Risk Summary
+- Employment Risk Summary
 
-\- DPD Risk Summary
+- DPD Risk Summary
 
-\- City Risk Summary
+- City Risk Summary
 
-\---
+---
 
 \## 📊 Power BI Dashboard & Business Intelligence
 
-Power BI is a **completed analytical layer of this project**, built for executive portfolio monitoring, risk analysis, segmentation, and business decision support.
+Power BI is a **completed BI layer** of the project for executive portfolio monitoring, interactive segmentation and risk reporting.
 
-The project contains a dedicated Power BI report:
+Report file:
 
 ```text
 NBFC_Loan_Portfolio_Risk_Analytics.pbix
 ```
 
-The Power BI dashboard is complementary to the Streamlit application:
+### Power BI vs Streamlit
+
+| Power BI | Streamlit |
+|---|---|
+| Executive BI reporting | API-driven application |
+| Interactive dashboarding | Operational analytics |
+| Portfolio segmentation | ML risk views |
+| KPI / exposure monitoring | Collections workflow |
+| Risk storytelling | Loan Origination |
+| DPD / business analysis | New-Loan Simulation |
+
+### 📈 Page 1 — Executive Portfolio Overview
+
+**KPI Cards**
+- Total Customers
+- Total Portfolio Exposure
+- Default Rate
+- Default Exposure
+- 90+ DPD Exposure
+
+**Portfolio & Risk Visuals**
+- Exposure by Loan Type
+- Default Rate by Loan Type
+- Customer Risk Distribution
+- DPD Analysis
+- Employment Risk
+- City Risk
+
+**Interactive Slicers**
+- Loan Type
+- Risk Category
+- Employment Type
+- City
+
+### 🔎 Page 2 — Risk Deep Dive & Customer Segmentation
+
+- Credit Risk Analysis
+- EMI Burden Analysis
+- Loan-to-Income Analysis
+- Risk Category Exposure
+- Default Exposure by Risk Category
+- Customer Risk Distribution by Loan Type
+
+### 🖼️ Completed Dashboard Screenshots
+
+#### Page 1 — Executive Portfolio Overview
+
+![NBFC Portfolio Dashboard - Page 1](Screenshots/dashboard_page_1.png)
+
+#### Page 2 — Risk Deep Dive & Customer Segmentation
+
+![NBFC Risk Dashboard - Page 2](Screenshots/dashboard_page_2.png)
+
+### 💼 Business Intelligence Layer
 
 ```text
-Power BI
-→ Executive BI reporting
-→ Interactive portfolio analysis
-→ Risk segmentation
-→ Exposure / default monitoring
-
-Streamlit
-→ API-driven application
-→ Operational risk views
-→ ML risk
-→ Collections
-→ Loan Origination
-→ Loan Simulation
+Loan Portfolio Data
+        ↓
+Data Preparation / SQL Analysis
+        ↓
+Portfolio & Risk Metrics
+        ↓
+Power BI Reporting
+        ↓
+Interactive Executive Dashboard
 ```
 
-### Power BI Dashboard Structure
-
-The completed Power BI report contains **2 analytical pages**.
+The BI layer supports portfolio exposure, defaults, product concentration, credit-risk segmentation, EMI affordability, LTI, DPD, employment segments, geographic segments, risk-category exposure and default exposure.
 
 ---
 
@@ -856,47 +958,47 @@ Power BI is therefore part of the **completed project**, not just a future enhan
 
 The final dataset passed the following checks:
 
-\- \*\*8,000\*\* total records
+- **8,000** total records
 
-\- \*\*8,000\*\* unique customers
+- **8,000** unique customers
 
-\- \*\*0\*\* missing values
+- **0** missing values
 
-\- \*\*0\*\* duplicate customer IDs
+- **0** duplicate customer IDs
 
-\- \*\*0\*\* invalid default/DPD records
+- **0** invalid default/DPD records
 
-\- \*\*0\*\* unaffordable loans
+- **0** unaffordable loans
 
-\- \*\*0\*\* high EMI burden records above 50%
+- **0** high EMI burden records above 50%
 
-\---
+---
 
 \## Key Business Insights
 
-\- The portfolio has \*\*₹417.04 Cr\*\* of total exposure.
+- The portfolio has **₹417.04 Cr** of total exposure.
 
-\- The observed default rate is \*\*12.47%\*\*.
+- The observed default rate is **12.47%**.
 
-\- \*\*₹50.03 Cr\*\* of exposure is associated with 90+ DPD.
+- **₹50.03 Cr** of exposure is associated with 90+ DPD.
 
-\- Business Loans have the highest observed default rate among loan products.
+- Business Loans have the highest observed default rate among loan products.
 
-\- Home Loans account for the largest share of portfolio exposure.
+- Home Loans account for the largest share of portfolio exposure.
 
-\- Very High EMI Burden customers show elevated default rates.
+- Very High EMI Burden customers show elevated default rates.
 
-\- High-risk customers represent \*\*605 customers\*\* with \*\*₹84.09 Cr\*\* exposure.
+- High-risk customers represent **605 customers** with **₹84.09 Cr** exposure.
 
-\- High-risk customers have a \*\*16.36%\*\* default rate.
+- High-risk customers have a **16.36%** default rate.
 
-\- Medium-risk customers represent the largest exposure among the three risk segments.
+- Medium-risk customers represent the largest exposure among the three risk segments.
 
-\---
+---
 
 \## System Architecture
 
-\`\`\`text
+```text
 
                  8,000 Loan Records
 
@@ -964,9 +1066,9 @@ The final dataset passed the following checks:
 
               Portfolio Risk Analytics
 
-\`\`\`
+```
 
-\---
+---
 
 \## 🔗 Project Links
 
@@ -1027,7 +1129,7 @@ python -m uvicorn api:app --reload
 
 ## Project Structure
 
-\`\`\`text
+```text
 
 NBFC PROJECT/
 
@@ -1065,6 +1167,9 @@ NBFC PROJECT/
 
 │
 
+├── models/
+│   └── rf_risk_pipeline.joblib
+│
 ├── Screenshots/
 
 │   ├── dashboard_page_1.png
@@ -1096,89 +1201,89 @@ NBFC PROJECT/
 
 └── .gitignore
 
-\`\`\`
+```
 
-\---
+---
 
 \## How to Run
 
 \### 1. Open the project
 
-\`\`\`powershell
+```powershell
 
 cd "C:\Users\KHUSHI\Documents\NBFC PROJECT"
 
-\`\`\`
+```
 
 \### 2. Run the ML pipeline
 
-\`\`\`powershell
+```powershell
 
 python ml_risk_model.py
 
-\`\`\`
+```
 
 This creates the ML-enriched loan dataset.
 
 \### 3. Run ML evaluation
 
-\`\`\`powershell
+```powershell
 
 python ml_evaluation.py
 
-\`\`\`
+```
 
 This generates:
 
-\- \`Data/ml_model_metrics.csv\`
+- `Data/ml_model_metrics.csv`
 
-\- \`Data/ml_confusion_matrix.csv\`
+- `Data/ml_confusion_matrix.csv`
 
-\- \`Data/ml_feature_importance.csv\`
+- `Data/ml_feature_importance.csv`
 
 \### 4. Build the SQLite database
 
-\`\`\`powershell
+```powershell
 
 python build_sqlite.py
 
-\`\`\`
+```
 
 \### 5. Start FastAPI
 
-\`\`\`powershell
+```powershell
 
 python -m uvicorn api\:app --reload
 
-\`\`\`
+```
 
 FastAPI runs at:
 
-\`\`\`text
+```text
 
 http\://127.0.0.1:8000
 
-\`\`\`
+```
 
 \### 6. Start Streamlit
 
 Open another PowerShell window:
 
-\`\`\`powershell
+```powershell
 
 cd "C:\Users\KHUSHI\Documents\NBFC PROJECT"
 
 python -m streamlit run app.py
 
-\`\`\`
+```
 
 Streamlit runs at:
 
-\`\`\`text
+```text
 
 http\://localhost:8501
 
-\`\`\`
+```
 
 Both FastAPI and Streamlit should be running for the complete application.
 
@@ -1186,57 +1291,57 @@ Both FastAPI and Streamlit should be running for the complete application.
 
 The original notebook, MySQL SQL analysis, and Power BI dashboard are retained as part of the project.
 
-\---
+---
 
 \## Limitations
 
 This project uses a synthetic loan portfolio for analytical and demonstration purposes.
 
-\- ML performance should not be interpreted as production credit-model performance.
+- ML performance should not be interpreted as production credit-model performance.
 
-\- Feature importance indicates model contribution, not causality.
+- Feature importance indicates model contribution, not causality.
 
-\- Rule-based thresholds are predefined analytical rules.
+- Rule-based thresholds are predefined analytical rules.
 
-\- Default predictions require validation on real historical lending data before real-world use.
+- Default predictions require validation on real historical lending data before real-world use.
 
-\- Production deployment would require model validation, calibration, monitoring, explainability, governance, and appropriate credit-risk controls.
+- Production deployment would require model validation, calibration, monitoring, explainability, governance, and appropriate credit-risk controls.
 
-\---
+---
 
 \## Future Scope
 
-\- Model calibration and threshold optimization
+- Model calibration and threshold optimization
 
-\- Hyperparameter tuning and cross-validation
+- Hyperparameter tuning and cross-validation
 
-\- Explainable AI using SHAP
+- Explainable AI using SHAP
 
-\- Probability of Default calibration
+- Probability of Default calibration
 
-\- Loss Given Default and Expected Loss modelling
+- Loss Given Default and Expected Loss modelling
 
-\- Automated high-risk alerts
+- Automated high-risk alerts
 
-\- Authentication and role-based API access
+- Authentication and role-based API access
 
-\- Cloud deployment
+- Cloud deployment
 
-\- Live loan-servicing data integration
+- Live loan-servicing data integration
 
-\- Model monitoring and drift detection
+- Model monitoring and drift detection
 
-\---
+---
 
 \## Project Outcome
 
 The project demonstrates an end-to-end financial risk analytics workflow combining:
 
-\*\*Python → ML → SQLite/SQL → FastAPI → Streamlit → Power BI\*\*
+**Python → ML → SQLite/SQL → FastAPI → Streamlit → Power BI**
 
 It converts raw loan-level data into portfolio KPIs, risk segments, delinquency analysis, ML risk predictions, collections priorities, API-driven loan workflows, new-loan simulations, and a **completed Power BI business intelligence dashboard** for executive and risk analysis.
 
-\---
+---
 
 \## Author
 
