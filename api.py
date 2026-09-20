@@ -1,7 +1,25 @@
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
+
 import sqlite3
 import pandas as pd
+
+
+# ============================================================
+# DEPLOYMENT-SAFE PATHS
+# ============================================================
+
+BASE_DIR = Path(__file__).resolve().parent
+
+DB_PATH = BASE_DIR / "Data" / "nbfc_risk_analytics.db"
+MODEL_PATH = BASE_DIR / "models" / "rf_risk_pipeline.joblib"
+
+
+# ============================================================
+# FASTAPI APPLICATION
+# ============================================================
 
 app = FastAPI(
     title="NBFC Loan Portfolio Risk Analytics API",
@@ -9,15 +27,22 @@ app = FastAPI(
     version="1.0.0"
 )
 
-DB_PATH = "Data/nbfc_risk_analytics.db"
 
+# ============================================================
+# DATABASE CONNECTION
+# ============================================================
 
 def get_connection():
     return sqlite3.connect(DB_PATH)
 
 
+# ============================================================
+# LOAN ORIGINATION REQUEST MODEL
+# ============================================================
+
 class LoanSubmission(BaseModel):
     """Loan-originations payload submitted by a loan officer / LOS."""
+
     age: int = Field(..., ge=18, le=80)
     city: str
     employment_type: str
@@ -29,12 +54,17 @@ class LoanSubmission(BaseModel):
     interest_rate: float = Field(..., ge=0, le=30)
 
 
-
 # ============================================================
 # COMMON FILTER FUNCTION
 # ============================================================
 
-def apply_filters(query, params, product=None, city=None, credit_band=None):
+def apply_filters(
+    query,
+    params,
+    product=None,
+    city=None,
+    credit_band=None
+):
 
     if product and product != "All":
         query += " AND product = ?"
@@ -559,17 +589,22 @@ def collections_priority(
         orient="records"
     )
 
+
 # ============================================================
 # 8. LIVE LOAN SIMULATION PIPELINE
 # ============================================================
 
 @app.post("/api/pipeline/simulate-new-loans")
-def simulate_new_loans(n: int = 20, seed: int = None):
+def simulate_new_loans(
+    n: int = 20,
+    seed: int = None
+):
     """
     Generate realistic new loans, score them with the saved Random Forest
     pipeline and existing rule-based score, then append them to both the
     analytical CSV and SQLite database.
     """
+
     if n < 1 or n > 500:
         raise HTTPException(
             status_code=400,
@@ -577,9 +612,13 @@ def simulate_new_loans(n: int = 20, seed: int = None):
         )
 
     try:
+
         from live_loan_simulator import simulate_and_append
 
-        result = simulate_and_append(n=n, seed=seed)
+        result = simulate_and_append(
+            n=n,
+            seed=seed
+        )
 
         new_df = result["new_loans"]
 
@@ -599,27 +638,41 @@ def simulate_new_loans(n: int = 20, seed: int = None):
                     "risk_category",
                     "ml_predicted_probability",
                 ]
-            ].to_dict(orient="records"),
+            ].to_dict(
+                orient="records"
+            ),
         }
 
     except FileNotFoundError as e:
-        raise HTTPException(status_code=503, detail=str(e))
+
+        raise HTTPException(
+            status_code=503,
+            detail=str(e)
+        )
 
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
 
     except Exception as e:
+
         raise HTTPException(
             status_code=500,
             detail=f"Live simulation failed: {e}"
         )
+
 
 # ============================================================
 # 9. SINGLE LOAN ORIGINATION / AUTO-SCORING
 # ============================================================
 
 @app.post("/api/loans")
-def create_loan(loan: LoanSubmission):
+def create_loan(
+    loan: LoanSubmission
+):
     """
     Accept one newly originated loan, calculate analytical features,
     apply the rule-based risk score and saved Random Forest model,
@@ -627,10 +680,15 @@ def create_loan(loan: LoanSubmission):
 
     This represents a loan officer / loan-origination-system submission.
     """
+
     try:
+
         from live_loan_simulator import score_manual_loan
 
-        result = score_manual_loan(loan.model_dump())
+        result = score_manual_loan(
+            loan.model_dump()
+        )
+
         row = result["new_loans"].iloc[0]
 
         return {
@@ -647,19 +705,34 @@ def create_loan(loan: LoanSubmission):
                 "loan_amount": float(row["loan_amount"]),
                 "emi": float(row["emi"]),
                 "emi_to_income": float(row["emi_to_income"]),
-                "loan_to_annual_income": float(row["loan_to_annual_income"]),
+                "loan_to_annual_income": float(
+                    row["loan_to_annual_income"]
+                ),
                 "risk_score": int(row["risk_score"]),
                 "risk_category": row["risk_category"],
-                "ml_predicted_probability": float(row["ml_predicted_probability"]),
+                "ml_predicted_probability": float(
+                    row["ml_predicted_probability"]
+                ),
             },
         }
 
     except FileNotFoundError as e:
-        raise HTTPException(status_code=503, detail=str(e))
+
+        raise HTTPException(
+            status_code=503,
+            detail=str(e)
+        )
 
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Loan submission failed: {e}")
 
+        raise HTTPException(
+            status_code=500,
+            detail=f"Loan submission failed: {e}"
+        )
